@@ -1,0 +1,134 @@
+***************
+*** 68,80 ****
+   */
+  function location_taxonomize_af_field_widget_addressfield_standard_form_alter(&$
+  element, &$form_state, $context) {
+    // check if this module is enabled as the current source
+    if (_location_taxonomize_get_source() != LT_AF_MODULE_ID) return;
+    // apply this only if we are on a node-edit form
+-   if (!isset($context['form']['#node_edit_form'])) return;
+    // check field settings
+    $taxonomize = $context['instance']['widget']['settings']['location_taxonomize'
+  ];
+    // add a process function to addressfield widgets
+    if ($taxonomize) {
+      if (!in_array('location_taxonomize_af_process_address', $element['#process']
+--- 68,80 ----
+   */
+  function location_taxonomize_af_field_widget_addressfield_standard_form_alter(&$
+  element, &$form_state, $context) {
+    // check if this module is enabled as the current source
+    if (_location_taxonomize_get_source() != LT_AF_MODULE_ID) return;
+    // apply this only if we are on a node-edit form
++   //if (!isset($context['form']['#node_edit_form'])) return;
+    // check field settings
+    $taxonomize = $context['instance']['widget']['settings']['location_taxonomize'
+  ];
+    // add a process function to addressfield widgets
+    if ($taxonomize) {
+      if (!in_array('location_taxonomize_af_process_address', $element['#process']
+***************
+*** 108,123 ****
+   * A submit handler for forms that contain an addressfield
+   */
+  function location_taxonomize_af_element_submitted($form, &$form_state) {
+    $lang = 'und';
+    // Act on values
+    $fields = $form_state['temporary']['addressfields'];
+    $items = array();
+    foreach ($fields as $field) {
+-     $deltas = $form_state['values'][$field][$lang];
+-     $actual_delta = 0;
+      foreach ($deltas as $delta) {
+         // Add the Administrative Area name, if possible
+         if(isset($form[$field][$lang][$actual_delta]['locality_block']['administr
+  ative_area']['#options'])) {
+           $options = $form[$field][$lang][$actual_delta]['locality_block']['admin
+  istrative_area']['#options'];
+--- 108,131 ----
+   * A submit handler for forms that contain an addressfield
+   */
+  function location_taxonomize_af_element_submitted($form, &$form_state) {
+    $lang = 'und';
+    // Act on values
+    $fields = $form_state['temporary']['addressfields'];
++   $value_index = array_keys($form_state['values']);
+    $items = array();
++ 
+    foreach ($fields as $field) {
++     if ($value_index[0] != 'nid')
++ 	{
++ 		$deltas = $form_state['values'][$value_index[0]][$field][$lang];
++ 	} else
++ 	{
++ 		$deltas = $form_state['values'][$field][$lang];
++ 	};
++ 	$actual_delta = 0;
+      foreach ($deltas as $delta) {
+         // Add the Administrative Area name, if possible
+         if(isset($form[$field][$lang][$actual_delta]['locality_block']['administr
+  ative_area']['#options'])) {
+           $options = $form[$field][$lang][$actual_delta]['locality_block']['admin
+  istrative_area']['#options'];
+***************
+*** 197,222 ****
+    $limit = 10;
+    // iterate through the next group of addresses
+    $i = 0;
+    $saved = 0;
+    $taxonomize = array();
+    if (!empty($context['sandbox']['fields'])) {
+-     foreach ($context['sandbox']['fields'] as $nid => $fields) {
+-       $node = node_load($nid);
+        foreach ($fields as $field) {
+-         $items = field_get_items('node', $node, $field);
+          foreach ($items as $address) {
+            // Add the country name
+            $address['country_name'] = location_taxonomize_get_country_name($addre
+  ss['country']);
+-           $taxonomize[$nid][] = $address;
+          }
+          $i++;
+-         array_shift($context['sandbox']['fields'][$nid]);
+          if (empty($context['sandbox']['fields'][$nid])) {
+-           unset($context['sandbox']['fields'][$nid]);
+          }
+        }
+        if ($i > $limit) break;
+      }
+      // taxonomize
+      $results = location_taxonomize_taxonomize_bulk($taxonomize);
+--- 205,237 ----
+    $limit = 10;
+    // iterate through the next group of addresses
+    $i = 0;
+    $saved = 0;
+    $taxonomize = array();
+    if (!empty($context['sandbox']['fields'])) {
++     /*foreach ($context['sandbox']['fields'] as $nid => $fields) {
++       $node = node_load($nid);*/
++ 	foreach ($context['sandbox']['fields'] as $eid => $fields) {
++       $entity = entity_load($eid);
+        foreach ($fields as $field) {
++         //$items = field_get_items('node', $node, $field);
++ 		$items = field_get_items('entity', $entity, $field);
+          foreach ($items as $address) {
+            // Add the country name
+            $address['country_name'] = location_taxonomize_get_country_name($addre
+  ss['country']);
++           //$taxonomize[$nid][] = $address;
++ 		  $taxonomize[$eid][] = $address;
+          }
+          $i++;
++         /*array_shift($context['sandbox']['fields'][$nid]);
+          if (empty($context['sandbox']['fields'][$nid])) {
++           unset($context['sandbox']['fields'][$nid]);*/
++ 		 array_shift($context['sandbox']['fields'][$eid]);
++         if (empty($context['sandbox']['fields'][$eid])) {
++           unset($context['sandbox']['fields'][$eid]); 
+          }
+        }
+        if ($i > $limit) break;
+      }
+      // taxonomize
+      $results = location_taxonomize_taxonomize_bulk($taxonomize);

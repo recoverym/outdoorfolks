@@ -1,0 +1,56 @@
+diff -Naur a/modules/search/search-result.tpl.php b/modules/search/search-result.tpl.php
+--- a/modules/search/search-result.tpl.php	2011-06-29 21:20:10.000000000 -0400
++++ b/modules/search/search-result.tpl.php	2011-07-22 11:21:45.000000000 -0400
+@@ -11,6 +11,7 @@
+  * Available variables:
+  * - $url: URL of the result.
+  * - $title: Title of the result.
++ * - $rendered: Field values as defined in the field type's custom display.
+  * - $snippet: A small preview of the result. Does not apply to user searches.
+  * - $info: String of all the meta information ready for print. Does not apply
+  *   to user searches.
+@@ -68,8 +69,10 @@
+     <a href="<?php print $url; ?>"><?php print $title; ?></a>
+   </h3>
+   <?php print render($title_suffix); ?>
+-  <div class="search-snippet-info">
+-    <?php if ($snippet) : ?>
++  <div class="search-content-info">
++    <?php if (!empty($view_mode_settings['search_result']['custom_settings'])) : ?>
++      <div class="search-rendered-info"><?php print $rendered; ?></div>
++    <?php elseif ($snippet) : ?>
+       <p class="search-snippet"<?php print $content_attributes; ?>><?php print $snippet; ?></p>
+     <?php endif; ?>
+     <?php if ($info) : ?>
+diff -Naur a/modules/search/search.css b/modules/search/search.css
+--- a/modules/search/search.css	2011-06-29 21:20:10.000000000 -0400
++++ b/modules/search/search.css	2011-07-21 12:02:16.000000000 -0400
+@@ -18,7 +18,7 @@
+ .search-results li {
+   margin-bottom: 1em;
+ }
+-.search-results .search-snippet-info {
++.search-results .search-content-info {
+   padding-left: 1em; /* LTR */
+ }
+ .search-results .search-info {
+diff -Naur a/modules/search/search.pages.inc b/modules/search/search.pages.inc
+--- a/modules/search/search.pages.inc	2011-06-29 21:20:10.000000000 -0400
++++ b/modules/search/search.pages.inc	2011-07-22 11:26:38.000000000 -0400
+@@ -129,6 +129,16 @@
+   }
+   // Check for existence. User search does not include snippets.
+   $variables['snippet'] = isset($result['snippet']) ? $result['snippet'] : '';
++  // Provide rendered field data for custom display.
++  $entity_type = 'node';
++  if (!empty($result[$entity_type])){
++  	$variables['rendered'] = $result[$entity_type]->rendered;
++    $view_mode_settings = field_view_mode_settings($entity_type, $result[$entity_type]->type);
++    if (!empty($view_mode_settings['search_result']['custom_settings'])) {
++      $variables['view_mode_settings'] = $view_mode_settings;
++      $variables['classes_array'][] = "search-result-custom-display";
++    }
++  }
+   // Provide separated and grouped meta information..
+   $variables['info_split'] = $info;
+   $variables['info'] = implode(' - ', $info);

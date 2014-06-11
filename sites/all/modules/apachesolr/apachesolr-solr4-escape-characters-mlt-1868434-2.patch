@@ -1,0 +1,39 @@
+diff --git a/Drupal_Apache_Solr_Service.php b/Drupal_Apache_Solr_Service.php
+index a99a567..d218f58 100644
+--- a/Drupal_Apache_Solr_Service.php
++++ b/Drupal_Apache_Solr_Service.php
+@@ -591,7 +591,7 @@ class DrupalApacheSolrService implements DrupalApacheSolrServiceInterface {
+   static public function escape($value)
+   {
+     //list taken from http://lucene.apache.org/java/docs/queryparsersyntax.html#Escaping%20Special%20Characters
+-    $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|"|~|\*|\?|:|\\\)/';
++    $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|"|~|\*|\?|:|\\\|\/)/';
+     $replace = '\\\$1';
+ 
+     return preg_replace($pattern, $replace, $value);
+diff --git a/apachesolr.index.inc b/apachesolr.index.inc
+index ea7ba10..0a1fedc 100644
+--- a/apachesolr.index.inc
++++ b/apachesolr.index.inc
+@@ -703,7 +703,7 @@ function apachesolr_index_delete_entity_from_index($env_id, $entity_type, $entit
+   }
+   try {
+     $solr = apachesolr_get_solr($env_id);
+-    $document_id = apachesolr_document_id($entity_id, $entity_type);
++    $document_id = $solr->escape(apachesolr_document_id($entity_id, $entity_type));
+     $query = "id:\"$document_id\" OR sm_parent_document_id:\"$document_id\"";
+     $solr->deleteByQuery($query);
+     // Log the query used for deletion.
+diff --git a/apachesolr_search.module b/apachesolr_search.module
+index 63f30d7..7351367 100644
+--- a/apachesolr_search.module
++++ b/apachesolr_search.module
+@@ -649,7 +649,7 @@ function apachesolr_search_mlt_suggestions($settings, $id, $solr = NULL, $contex
+       'mlt_qf' => 'mlt.qf',
+     );
+     $params = array(
+-      'q' => 'id:' . $id,
++      'q' => 'id:' . $solr->escape($id),
+       'qt' => 'mlt',
+       'fl' => array('entity_id', 'entity_type', 'label', 'path', 'url'),
+       'mlt.fl' => $settings['mlt_fl'],

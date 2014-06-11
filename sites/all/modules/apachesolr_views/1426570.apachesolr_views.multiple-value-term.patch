@@ -1,0 +1,18 @@
+diff --git a/handlers/apachesolr_views_handler_field.inc b/handlers/apachesolr_views_handler_field.inc
+index 247bca1..089564e 100644
+--- a/handlers/apachesolr_views_handler_field.inc
++++ b/handlers/apachesolr_views_handler_field.inc
+@@ -5,7 +5,12 @@ class apachesolr_views_handler_field extends views_handler_field {
+   function get_value($values, $field = NULL) {
+     $alias = isset($field) ? $this->aliases[$field] : $this->field_alias;
+     if (isset($values->node->{$alias})) {
+-      return $values->node->{$alias};
++      if (is_array($values->node->{$alias})) {
++        return implode(" ", $values->node->{$alias});
++      }
++      else {
++        return $values->node->{$alias};
++      }
+     }
+   }
+ 

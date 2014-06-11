@@ -1,0 +1,130 @@
+.form-actions input {
+  margin-right: 0.5em;
+}
+
+.form-actions input:hover {
+  background: #FFFFFF;
+}
+
+label {
+  font-weight: bold;
+}
+
+#edit-profile-pro-loco-field-outdoor-recreation .form-type-checkbox{
+    display: block;
+    float: left;
+    width: 25%;
+}
+#edit-profile-pro-loco-field-outdoor-recreation .description{
+   clear:both;
+   padding-top:10px;
+}
+
+#edit-profile-service-provider-field-outdoor-recreation .form-type-checkbox{
+    display: block;
+    float: left;
+    width: 25%;
+}
+#edit-profile-service-provider-field-outdoor-recreation .description{
+   clear:both;
+   padding-top:10px;
+}
+
+#addressfield-wrapper legend{
+  display:none;
+}
+
+
+#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1 label,
+#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1 .views-widget {
+ display: inline-block;
+ float: left;
+}
+
+#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1 label {
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 2.5;
+    margin-right: 15px;
+}
+
+#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1 .views-exposed-widget .form-submit{
+  margin-top:0;
+}
+
+#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1{
+
+}
+
+/*Stili per le pagine di registrazione utente*/
+
+.user-register .form-content{
+  padding:0 1%;
+}
+
+.user-register .form-content .description{
+  padding:0;
+}
+
+.user-register .description{
+  padding:0 1%;
+}
+
+.user-register .field-name-field-image{
+  display:none;
+}
+
+.user-register .field-name-field-regione-e-provincia{
+  display:none;
+}
+
+.user-register .form-links{
+  padding-top:20px;
+}
+
+.user-register .form-item-terms-of-use{
+  padding-top:30px;
+}
+
+.user-register h3.pane-title{
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 0;
+  background-color:#DFFF89;
+  line-height:24px;
+  border:1px solid #DAFA87;
+  padding:0 1%;
+}
+
+.user-register .field-name-field-attivita .form-type-checkbox{
+  display:inline-block;
+  width:19%;
+}
+
+.user-register .field-name-field-attivita {
+    margin-top:30px;
+}
+
+.user-register .field-name-field-attivita .description{
+    padding-top:10px;
+}
+
+.user-register .field-name-field-tipologia-partner{
+  margin-bottom:20px;
+}
+
+/*.user-register .field-name-field-tipologia-partner .form-type-checkbox{
+	display:inline-block;
+  width:33%;
+}*/
+
+
+
+
+
+/*#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1 label,
+#views-exposed-form-cerca-offerte-per-attivita-panel-pane-1 .views-widget{
+ display: inline-block;
+ float: left;
+}*/

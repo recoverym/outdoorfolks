@@ -1,0 +1,66 @@
+diff --git a/rb_misc.module b/rb_misc.module
+index 6e0dbd2..bb3ca30 100644
+--- a/rb_misc.module
++++ b/rb_misc.module
+@@ -130,9 +130,12 @@ function rb_misc_list_variant_context_entities($task, $subtask, $handler) {
+   $entities = array();
+   foreach ($potential_entities as $entity_name => $potential_entity) {
+ 
++    // Type isn't always an array - ensure we deal with one.
++    $types = (!is_array($potential_entity->type)) ? array($potential_entity->type) : $potential_entity->type;
++
+     // Check the types for each potential variable, to see if any matches the
+     // types handles by Rules (or, rather, Entity API).
+-    foreach ($potential_entity->type as $type) {
++    foreach ($types as $type) {
+       if (isset($supported_entity_types[$type])) {
+         // The variable name cannot contain colon or dashes.
+         $id = str_replace(':', '__', $entity_name);
+@@ -142,6 +145,18 @@ function rb_misc_list_variant_context_entities($task, $subtask, $handler) {
+           'type' => $type,
+         );
+       }
++      else {
++        // Handle other data types.
++        // @TODO Is there a generic way to handle this?
++        switch ($type) {
++          case 'string':
++            $entities[$entity_name] = array(
++              'label' => $potential_entity->identifier,
++              'type' => 'text',
++            );
++            break;
++        }
++      }
+     }
+   }
+ 
+@@ -169,15 +184,27 @@ function rb_misc_load_variant_context_entities($handler, $base_contexts) {
+   $entities = array();
+   foreach ($potential_entities as $entity_name => $potential_entity) {
+ 
++    // Type isn't always an array - ensure we deal with one.
++    $types = (!is_array($potential_entity->type)) ? array($potential_entity->type) : $potential_entity->type;
++
+     // Check the types for each potential entity, to see if any matches the
+     // types handles by Rules (or, rather, Entity API).
+-    foreach ($potential_entity->type as $type) {
++    foreach ($types as $type) {
+       if (isset($supported_entity_types[$type])) {
+         // The variable name cannot contain colon or dashes.
+         $id = str_replace(':', '__', $entity_name);
+         $id = str_replace('-', '_', $id);
+         $entities[$id] = $potential_entity->data;
+       }
++      else {
++        // Handle other data types.
++        // @TODO Is there a generic way to handle this?
++        switch ($type) {
++          case 'string':
++            $entities[$entity_name] = $potential_entity->data;
++            break;
++        }
++      }
+     }
+   }
+ 

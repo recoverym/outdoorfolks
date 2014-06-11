@@ -1,0 +1,61 @@
+<?php
+
+
+/**
+ * Implements hook_menu_alter().
+ */
+function outdoorfolks_registration_menu_alter(&$items) {
+  // Ctools registration wizard for standard registration.
+  // Overrides default router item defined by core user module.
+  $debug=0;
+
+  $items['user/register']['page callback'] = array('outdoorfolks_registration_ctools_wizard');
+  // Pass the "first" step key to start the form on step 1 if no step has been specified.
+  $items['user/register']['page arguments'] = array('register');
+  $items['user/register']['file path'] = drupal_get_path('module', 'outdoorfolks_registration');
+  $items['user/register']['file'] = 'outdoorfolks_registration_ctools_wizard.inc';
+
+  return $items;
+}
+
+/**
+ * Implements hook_menu().
+ * */
+function outdoorfolks_registration_menu() {
+  $debug=0;
+  $items['user/register/%'] = array(
+      'title' => 'Create new account',
+      'page callback' => 'outdoorfolks_registration_ctools_wizard',
+      'page arguments' => array(2),
+      'access callback' => 'outdoorfolks_registration_access',
+      //'access arguments' => array(2),
+      'file' => 'outdoorfolks_registration_ctools_wizard.inc',
+      'type' => MENU_CALLBACK,
+     );
+  return $items;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for the registration form.
+ */
+function outdoorfolks_registration_form_profile2_type_form_alter(&$form, &$form_state, $form_id) {
+  $form['#submit'] = array(
+      'user_register_submit',
+      'ctools_wizard_submit',
+    );
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function outdoorfolks_registration_user_register_form_alter(&$form, &$form_state, $form_id) {
+  // It is very important that these submit handlers fire in the right order!
+  $debug=0;
+  $form['#submit'] = array(
+      'user_register_submit',
+      //'ysl_registration_user_register_form_submit',
+      'ctools_wizard_submit',
+  );
+  $debug=0;
+}

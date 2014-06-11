@@ -1,0 +1,34 @@
+<?php
+
+function geocoder_rules_geocode($handler, $address) {
+  $geometry = geocoder($handler, $address);
+
+  watchdog("DEBUG GEOCODER RULES", var_export($geometry, true));
+  $result = array(
+    'longitude' => $geometry->coords[0],
+    'latitude' => $geometry->coords[1],
+    'accuracy' => $geometry->data['geocoder_accuracy'],
+  );
+  return $result;
+}
+
+function geocoder_rules_reverse_geocode($handler, $lat, $long, $language) {
+  watchdog("DEBUG GEOCODER RULES", "long=$long, lat=$lat");
+  $options = array();
+  $options['language'] = $language;
+  $address = geocoder_reverse($handler, $lat, $long, $options);
+
+  watchdog("DEBUG GEOCODER RULES", var_export($address, true));
+  $result = array(
+    'address' => $address->address,
+    'accuracy' => $address->data['geocoder_accuracy'],
+    'address_components'=> $address->data['geocoder_address_components'][0],
+    'city'=> $address->data['geocoder_address_components'][3]->long_name,
+    'province_l'=> $address->data['geocoder_address_components'][4]->long_name,
+    'province_s'=> $address->data['geocoder_address_components'][4]->short_name,
+    'region'=> $address->data['geocoder_address_components'][5]->long_name,
+  );
+  return $result;
+}
+
+

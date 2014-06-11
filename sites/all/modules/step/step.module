@@ -1,0 +1,247 @@
+<?php
+
+/**
+ * @file
+ * Multi-Step Registration module main file.
+ */
+
+/**
+ * The first registration step.
+ */
+define('STEP_REGISTER', 'register');
+
+/**
+ * Tell if Profile2 module is enabled.
+ */
+define('STEP_PROFILE2', module_exists('profile2'));
+
+if (STEP_PROFILE2) {
+  module_load_include('inc', 'step', 'includes/profile2');
+}
+
+/**
+ * Implements hook_help().
+ */
+function step_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#step':
+      return '<p>' . t("With Multi-Step Registration module you can create multi-step wizard registration forms. Each step of the wizard can be configured to expose one ore many Profile2 types.") . '</p>';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function step_theme() {
+  return array(
+    'step_list_form' => array(
+      'render element' => 'form',
+      'file' => 'includes/theme.inc',
+    ),
+    'step_description' => array(
+      'file' => 'includes/theme.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function step_menu_alter(&$items) {
+  $items['user/register']['page callback'] = 'step_wizard';
+  $items['user/register']['page arguments'] = array(STEP_REGISTER);
+  $items['user/register']['file path'] = drupal_get_path('module', 'step') . '/includes';
+  $items['user/register']['file'] = 'wizard.inc';
+}
+
+/**
+ * Implements hook_menu().
+ */
+function step_menu() {
+  $items = array();
+
+  $items['admin/config/people/step'] = array(
+    'title' => 'Multi-Step Registration',
+    'description' => 'Configure registration steps to be used by multi-step registration.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('step_list_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'includes/admin.inc',
+  );
+  $items['admin/config/people/step/create'] = array(
+    'title' => 'Create',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('step_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'includes/admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/config/people/step/%step/edit'] = array(
+    'title' => 'Edit registration step',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('step_form', 4),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'includes/admin.inc',
+  );
+  $items['admin/config/people/step/%step/delete'] = array(
+    'title' => 'Delete registration step',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('step_delete_form', 4),
+    'access callback' => 'step_delete_access',
+    'access arguments' => array(4),
+    'file' => 'includes/admin.inc',
+  );
+  // Registration step page.
+  $items['user/register/%'] = array(
+    'page callback' => 'step_wizard',
+    'page arguments' => array(2),
+    'access callback' => 'step_access',
+    'access arguments' => array(2),
+    'file path' => drupal_get_path('module', 'step') . '/includes',
+    'file' => 'wizard.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_forms().
+ */
+function step_forms($form_id, $args) {
+  $forms = array();
+  foreach (variable_get('step_steps', step_default()) as $id => $step) {
+    $forms['step_step_' . $id] = array(
+      'callback' => 'step_step',
+    );
+  }
+  return $forms;
+}
+
+/**
+ * Access callback for registration step deletion.
+ */
+function step_delete_access($step) {
+  return user_access('administer site configuration') && $step['id'] != STEP_REGISTER;
+}
+
+/**
+ * Access callback for user registration steps.
+ */
+function step_access($step = STEP_REGISTER) {
+  global $user;
+
+  // Registration is available only for anonymous.
+  if (!empty($user->uid)) {
+    return FALSE;
+  }
+
+  // Get the registration process cache.
+  $cache = StepCache::get('data');
+
+  return !empty($cache['uid']);
+}
+
+/**
+ * Load register step from database by object machine name.
+ *
+ * @param string $id
+ *   Object machine name.
+ *
+ * @return array|bool
+ *   Loaded array or FALSE if the array was not loaded.
+ */
+function step_load($id) {
+  $steps = variable_get('step_steps', step_default());
+  return isset($steps[$id]) ? $steps[$id] : FALSE;
+}
+
+/**
+ * Gets a list with default registration steps.
+ */
+function step_default() {
+  static $default;
+
+  if (!isset($default)) {
+    $default = array(
+      STEP_REGISTER => array(
+        'id' => STEP_REGISTER,
+        'title' => 'Register',
+        'description' => array(
+          'value' => '',
+          'format' => filter_default_format(),
+        ),
+        'weight' => 0,
+      ),
+    );
+  }
+
+  return $default;
+}
+
+/**
+ * Gets a list of registration steps titles.
+ *
+ * @return array
+ *   An associative array having registration steps IDs as keys and titles as
+ *   values.
+ */
+function step_steps() {
+  $return = array();
+  foreach (variable_get('step_steps', step_default()) as $id => $step) {
+    $return[$id] = $step['title'];
+  }
+
+  return $return;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function step_form_user_register_form_alter(&$form, &$form_state) {
+  // Multi-step Registration is available only for anonymous registration
+  // process. Registering new users by admin is done in a common way.
+  if (empty($form_state['step'])) {
+    return;
+  }
+
+  // Remove default form buttons.
+  unset($form['actions']);
+
+  // Add the CTools submit callback.
+  $form['#submit'] = array(
+    'user_register_submit',
+    'ctools_wizard_submit',
+  );
+
+  // Add description, if case.
+  step_add_description($form, $form_state);
+
+  // @todo
+  //   Check the possibility to allow "Back" to this form by hiding somehow the
+  //   user credentials and allow only the custom content.
+}
+
+/**
+ * Adds the registration step description on top of wizard step form.
+ *
+ * @param $form
+ *   Nested array of form elements that comprise the form.
+ * @param $form_state
+ *   A keyed array containing the current state of the form.
+ *
+ * @see step_form_user_register_form_alter()
+ * @see step_step()
+ */
+function step_add_description(&$form, &$form_state) {
+  if (variable_get('step_show_description', FALSE)) {
+    $step = step_load($form_state['step']);
+    if ($step && !empty($step['description']['value'])) {
+      $form['step_description'] = array(
+        '#type' => 'markup',
+        '#markup' => theme('step_description', $step['description']),
+        '#weight' => -500,
+      );
+    }
+  }
+}

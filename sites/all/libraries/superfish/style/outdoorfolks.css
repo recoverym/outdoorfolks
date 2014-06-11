@@ -1,0 +1,128 @@
+.sf-menu.sf-style-outdoorfolks {
+  float: right;
+}
+.sf-menu.sf-style-outdoorfolks.sf-navbar {
+  width: 100%;
+}
+.sf-menu.sf-style-outdoorfolks ul {
+  padding-right: 0;
+  right: 0;
+}
+.sf-menu.sf-style-outdoorfolks a {
+  color: #555555;
+  padding: 0.75em 1em;
+  
+}
+.sf-menu.sf-style-outdoorfolks a img {
+   padding-right: 1em;
+   vertical-align:middle;
+  
+}
+.sf-menu.sf-style-outdoorfolks a.sf-with-ul {
+	padding:1em 2.25em 0.5em 0;
+}
+.sf-menu.sf-style-outdoorfolks.rtl a.sf-with-ul {
+  padding-left: 2.25em;
+  padding-right: 1em;
+}
+.sf-menu.sf-style-outdoorfolks.sf-navbar a {
+  border: 0;
+}
+.sf-menu.sf-style-outdoorfolks span.sf-description {
+  color: #555555;
+  display: block;
+  font-size: 0.8em;
+  line-height: 1.5em;
+  margin: 5px 0 0 5px;
+  padding: 0;
+}
+.sf-menu.sf-style-outdoorfolks li,
+.sf-menu.sf-style-outdoorfolks.sf-navbar {
+  background: #f0f4f4;
+  margin: 0 0 0 0;
+}
+
+.sf-menu.sf-style-outdoorfolks li li {
+  background: #f0f4f4;
+    width: 10em;
+}
+.sf-menu.sf-style-outdoorfolks li li li {
+  background: #f0f4f4;
+}
+.sf-menu.sf-style-outdoorfolks li:hover,
+.sf-menu.sf-style-outdoorfolks li.sfHover,
+.sf-menu.sf-style-outdoorfolks li.active a,
+.sf-menu.sf-style-outdoorfolks a:focus,
+.sf-menu.sf-style-outdoorfolks a:hover,
+.sf-menu.sf-style-outdoorfolks a:active,
+.sf-menu.sf-style-outdoorfolks.sf-navbar li li {
+  background: #f0f4f4;
+  color: #555555;
+}
+.sf-menu.sf-style-outdoorfolks.sf-navbar li ul {
+  background-color: #f0f4f4;
+}
+.sf-menu.sf-style-outdoorfolks.sf-navbar li ul li ul {
+  background-color: transparent;
+}
+.sf-menu.sf-style-outdoorfolks .sf-sub-indicator {
+  background-image: url('../images/arrows-777777.png');
+  top:1.25em;
+}
+.sf-menu.sf-style-outdoorfolks.rtl .sf-sub-indicator {
+  background-image: url('../images/arrows-777777-rtl.png');
+  top:1.1em;
+}
+.sf-menu.sf-style-outdoorfolks ul.sf-megamenu li.sf-megamenu-wrapper ol,
+.sf-menu.sf-style-outdoorfolks ul.sf-megamenu li.sf-megamenu-wrapper ol li {
+  margin: 0;
+  padding: 0;
+}
+.sf-menu.sf-style-outdoorfolks ul.sf-megamenu li.sf-megamenu-wrapper a.menuparent {
+  font-weight: bold;
+}
+.sf-menu.sf-style-outdoorfolks ul.sf-megamenu li.sf-megamenu-wrapper ol li.sf-megamenu-column {
+  display: inline;
+  float: right;
+  width: 12em;
+}
+.sf-menu.sf-style-outdoorfolks.rtl ul.sf-megamenu li.sf-megamenu-wrapper ol li.sf-megamenu-column {
+  float: left;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-1 ul.sf-megamenu {
+  width: 12em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-2 ul.sf-megamenu {
+  width: 24em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-3 ul.sf-megamenu {
+  width: 36em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-4 ul.sf-megamenu {
+  width: 48em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-5 ul.sf-megamenu {
+  width: 60em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-6 ul.sf-megamenu {
+  width: 72em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-7 ul.sf-megamenu {
+  width: 84em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-8 ul.sf-megamenu {
+  width: 96em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-9 ul.sf-megamenu {
+  width: 108em;
+}
+.sf-menu.sf-style-outdoorfolks li.sf-parent-children-10 ul.sf-megamenu {
+  width: 120em;
+}
+
+.sf-menu.sf-style-outdoorfolks.sf-horizontal.sf-shadow ul,
+.sf-menu.sf-style-outdoorfolks.sf-vertical.sf-shadow ul,
+.sf-menu.sf-style-outdoorfolks.sf-navbar.sf-shadow ul ul {
+ /*left:-40%;*/
+ margin-top:1;
+}

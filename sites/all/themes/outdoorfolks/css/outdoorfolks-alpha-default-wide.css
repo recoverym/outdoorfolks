@@ -1,0 +1,15 @@
+/* This file will hold styles that are loaded using the same media query as the wide grid. */
+
+.prefooter_it {
+  background-image: url(../images/background_utente.png);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 70%;
+}
+
+.prefooter_en {
+  background-image: url(../images/background_utente_en.png);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 70%;
+}

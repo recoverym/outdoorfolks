@@ -1,0 +1,202 @@
+<?php
+
+//define('STEP_REGISTER', 'register');
+
+
+/**
+ * Implements hook_menu().
+ * */
+function outdoorfolks_step_registration_menu() {
+  // Registration step page.
+
+  $profiles = profile2_get_types();
+  $debug=0;
+  foreach ($profiles as $profile){
+
+    switch ($profile->type){
+      case 'service_provider':
+            $path = 'provider';
+        break;
+       case 'pro_loco':
+            $path = 'proloco';
+         break;
+       default:
+         $path = $profile->type;
+    }
+
+    $registration_path = $path . '/register';
+
+    $items[$registration_path] = array(
+        'title' => 'Create new account',
+        'page callback' => 'step_wizard',
+        'page arguments' => array(STEP_REGISTER),
+        'access callback' => 'user_is_anonymous',
+        'file' => 'wizard.inc',
+        'file path' => drupal_get_path('module', 'step') . '/includes',
+    );
+
+    /*$items[$registration_path] = array(
+        'title' => 'Create new account',
+        'page callback' => '_outdoorfolks_step_registration_user_register',
+        'page arguments' => array(
+            'profile' => $profile->label,
+        ),
+        'access callback' => 'user_is_anonymous',
+        'file' => 'outdoorfolks_step_registration_form.inc',
+        'type' => MENU_LOCAL_TASK,
+    );*/
+
+    $items[$path] = array(
+        'title' => 'Log in',
+        'page callback' => '_outdoorfolks_step_registration_user_login',
+         'page arguments' => array(
+            'profile' => $profile->label,
+        ),
+        'access callback' => 'user_is_anonymous',
+        'file' => 'outdoorfolks_step_registration_form.inc',
+        'menu_name' => 'user-menu',
+        'type' => MENU_CALLBACK,
+    );
+    $items[$path . '/login'] = array(
+        'title' => 'Log in',
+        'page callback' => '_outdoorfolks_step_registration_user_login',
+         'page arguments' => array(
+            'profile' => $profile->label,
+        ),
+        'access callback' => 'user_is_anonymous',
+        'file' => 'outdoorfolks_step_registration_form.inc',
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+    );
+
+    $items[$path . '/password'] = array(
+        'title' => 'Request new password',
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => '_outdoorfolks_step_registration_user_password',
+         'page arguments' => array(
+            'profile' => $profile->label,
+        ),
+        'access callback' => 'user_is_anonymous',
+        'file' => 'outdoorfolks_step_registration_form.inc',
+    );
+    $items[$registration_path . '/%'] = array(
+        'page callback' => 'step_wizard',
+        'page arguments' => array(2),
+        'access callback' => 'step_access',
+        'access arguments' => array(2),
+        'file path' => drupal_get_path('module', 'step') . '/includes',
+        'file' => 'wizard.inc',
+        'type' => MENU_CALLBACK,
+    );
+
+  }
+  return $items;
+}
+
+function outdoorfolks_step_registration_step_wizard_alter(&$form_info,&$form_state){
+
+  $current_path= current_path();
+
+  switch ($current_path){
+    case "user/register":
+      if(!empty($form_info['forms']['profile'])){
+        unset ($form_info['forms']['profile']);
+      }
+      break;
+    case "provider/register":
+      /*if(!empty($form_info['forms']['profile'])){
+        unset ($form_info['forms']['profile']);
+      }*/
+      break;
+    case "proloco/register":
+      /*if(!empty($form_info['forms']['profile'])){
+        unset ($form_info['forms']['profile']);
+      }*/
+      break;
+  }
+
+  $debug=0;
+}
+
+function outdoorfolks_step_registration_form_user_register_form_alter(&$form, &$form_state, $form_id){
+  $debug=0;
+
+  $user_roles = user_roles(TRUE);
+  $current_path= current_path();
+
+  switch ($current_path){
+    case "provider/register":
+      $rid = array_search('provider', user_roles());
+      if (!array_key_exists($rid, $form['account']['roles'])) {
+        $form['account']['roles'][$rid] = array(
+            '#type' => 'checkbox',
+            '#title' => check_plain($user_roles[$rid]),
+            '#default_value' => TRUE,
+            '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+        );
+      }
+      break;
+      case "proloco/register":
+        $rid = array_search('proloco', user_roles());
+        if (!array_key_exists($rid, $form['account']['roles'])) {
+          $form['account']['roles'][$rid] = array(
+              '#type' => 'checkbox',
+              '#title' => check_plain($user_roles[$rid]),
+              '#default_value' => TRUE,
+              '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+          );
+        }
+        break;
+  }
+
+  $debug=0;
+  /* if ($profile_types != NULL) {
+
+  // Prepare variables for roles.
+
+  $roles = array();
+
+  // Attach profile(s) to user/register form.
+  foreach ($profile_types as $key => $value) {
+  // Get profile object.
+  $type_name = (string) $profile_types[$key]->type;
+  $profile_type = profile2_get_types($type_name);
+
+  // If this profile has not already been attached.
+  if (empty($form_state['profiles'][$type_name])) {
+  $profile = profile_create(array('type' => $type_name));
+  $form_state['profiles'][$type_name] = $profile;
+
+  $misc = unserialize($profile_types[$key]->misc);
+  if ($misc['fieldset_wrap']) {
+  // Wrap each profile form in a fieldset.
+  $form['profile_' . $type_name] = array(
+      '#type' => 'fieldset',
+      '#title' => check_plain($profile_type->label),
+  );
+  }
+  // Set Form API #weight attribute for profile.
+  $form['profile_' . $type_name]['#weight'] = $profile_type->weight;
+
+  // Attach custom confirmation message to form for later display.
+  if (isset($misc['confirmation_display'])) {
+  $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
+  }
+  }
+
+  // Add appropriate user roles.
+  $profile_roles = unserialize($value->roles);
+  foreach ($profile_roles as $rid => $value) {
+  // Add role to roles array if it isn't already there.
+  if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
+  $form['account']['roles'][$rid] = array(
+      '#type' => 'checkbox',
+      '#title' => check_plain($user_roles[$rid]),
+      '#default_value' => TRUE,
+      '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+  );
+  }
+  }
+
+  }*/
+}
+

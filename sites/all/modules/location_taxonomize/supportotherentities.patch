@@ -1,0 +1,212 @@
+--- location_taxonomize.inc	2012-06-03 22:30:00.000000000 -0800
++++ location_taxonomize.inc 2013-11-26 02:41:18.000000000 -0800
+@@ -183,13 +183,13 @@
+  * Checks the given form to make sure that the term attach field exists and is 
+  * set up correctly
+  */
+ function location_taxonomize_term_attach_check_field($form) {
+   $field_name = 'field_' . LT_TERM_ATTACH_FIELD;
+   // make sure that a field by this name exists
+-  if (!isset($form[$field_name])) return FALSE;
++  if (!is_array(field_info_field($field_name))) return FALSE;
+   // make sure that this field has the right settings
+   $field_info = field_info_field($field_name);
+   if ($field_info['deleted'] == 1) return FALSE;
+   if ($field_info['type'] != 'taxonomy_term_reference') return FALSE;
+   if ($field_info['settings']['allowed_values'][0]['vocabulary'] != LT_MODULE_ID) return FALSE;
+   return $field_name;
+   
+--- location_taxonomize.module	2012-06-03 22:30:00.000000000 -0800
++++ location_taxonomize.module	2013-11-26 02:49:20.000000000 -0800
+@@ -156,22 +156,24 @@
+   }
+   return array("saved" => $saved, "tids" => $tids);
+ }
+ 
+ function location_taxonomize_taxonomize_bulk($items) {
+   $saved = 0;
+-  foreach ($items as $nid => $items) {
++  //foreach ($items as $nid => $items) {
++  foreach ($items as $eid => $items) {
+     $tids = array();
+     foreach ($items as $item) {
+       $results = location_taxonomize_process_item($item);
+       $saved += $results['saved'];
+       $tids = array_merge($tids, $results['tids']);
+     }
+     if (!empty($tids)) {
+       if (location_taxonomize_term_attach_enabled()) {
+-        location_taxonomize_term_attach_bulk($tids, $nid);
++        //location_taxonomize_term_attach_bulk($tids, $nid);
++	  location_taxonomize_term_attach_bulk($tids, $eid);
+       }
+     }
+   }
+   return array("saved" => $saved);
+ }
+ 
+@@ -415,46 +417,67 @@
+ function location_taxonomize_term_attach($tids, $form, &$form_state) {
+   $lang = 'und';
+   
+   // check that the field exists and is set up correctly
+   $field = location_taxonomize_term_attach_check_field($form);
+   if ($field == FALSE) {
+-    drupal_set_message(t('Location Taxonomize could not attach the terms to the 
+-node because the Taxonomy Reference field is not set up correctly'), 'warning');
++    //drupal_set_message(t('Location Taxonomize could not attach the terms to th
++e node because the Taxonomy Reference field is not set up correctly'), 'warning'
++);
++	drupal_set_message(t('Location Taxonomize could not attach the terms to the ent
++ity because the Taxonomy Reference field is not set up correctly'), 'warning');
+     return;
+   }
+-
++  // check if we are a node or an entity;
++  $value_index = array_keys($form_state['values']);
++  
+   // empty the currently set values
+-  $form_state['values'][$field][$lang] = array();
+-  
++   if ($value_index[0] != 'nid')
++    {
++        $form_state['values'][$value_index[0]][$field][$lang] = array();
++    } else
++    {
++        $form_state['values'][$field][$lang] = array();
++    }
+   // Reverse the order to assign the lowest term in the hierarchy first
+   $tids = array_reverse($tids);
+   
+   // add the values
+   $tids = array_unique($tids);
+   foreach ($tids as $tid) {
+-    $form_state['values'][$field][$lang][]['tid'] = $tid;
++    if ($value_index[0] != 'nid')
++    {
++        $form_state['values'][$value_index[0]][$field][$lang][]['tid'] = $tid;
++    } else
++    {
++        $form_state['values'][$field][$lang][]['tid'] = $tid;
++    }
+   }
+ }
+ 
+-function location_taxonomize_term_attach_bulk($tids, $nid) {
++//function location_taxonomize_term_attach_bulk($tids, $nid) {
++function location_taxonomize_term_attach_bulk($tids, $eid) {
+   $langcode = 'und';
+   // load the node
+-  $node = node_load($nid);
+-  if (!isset($node->field_location_taxonomize_terms)) return;
++  /*$node = node_load($nid);
++  if (!isset($node->field_location_taxonomize_terms)) return;*/
++  $entity = entity_load($eid);
++  if (!isset($entity->field_location_taxonomize_terms)) return;
+   
+   // Reverse the order to assign the lowest term in the hierarchy first
+   $tids = array_reverse($tids);
+   
+   $tids = array_unique($tids);
+   $save = array();
+   foreach ($tids as $tid) {
+     $save[$langcode][]['tid'] = $tid;
+   }
+-  $node->field_location_taxonomize_terms = $save;
+-  node_save($node);
++  /*$node->field_location_taxonomize_terms = $save;
++  node_save($node);*/
++  $entity->field_location_taxonomize_terms = $save;
++  entity_save($entity);
+ }
+ 
+ ////////////////////////////////////////
+ // Feature: Bulk taxonomize
+ ////////////////////////////////////////
+ 
+--- \location_taxonomize_af\location_taxonomize_af.module	2012-06-03 22:30:00.000000000 -0800
++++ \location_taxonomize_af\location_taxonomize_af.module	2013-11-16 17:41:05.000000000 -0800
+@@ -68,13 +68,13 @@
+  */
+ function location_taxonomize_af_field_widget_addressfield_standard_form_alter(&$
+ element, &$form_state, $context) {
+   // check if this module is enabled as the current source
+   if (_location_taxonomize_get_source() != LT_AF_MODULE_ID) return;
+   // apply this only if we are on a node-edit form
+-  if (!isset($context['form']['#node_edit_form'])) return;
++  //if (!isset($context['form']['#node_edit_form'])) return;
+   // check field settings
+   $taxonomize = $context['instance']['widget']['settings']['location_taxonomize'
+ ];
+   // add a process function to addressfield widgets
+   if ($taxonomize) {
+     if (!in_array('location_taxonomize_af_process_address', $element['#process']
+@@ -108,16 +108,24 @@
+  * A submit handler for forms that contain an addressfield
+  */
+ function location_taxonomize_af_element_submitted($form, &$form_state) {
+   $lang = 'und';
+   // Act on values
+   $fields = $form_state['temporary']['addressfields'];
++  $value_index = array_keys($form_state['values']);
+   $items = array();
++
+   foreach ($fields as $field) {
+-    $deltas = $form_state['values'][$field][$lang];
+-    $actual_delta = 0;
++    if ($value_index[0] != 'nid')
++	{
++		$deltas = $form_state['values'][$value_index[0]][$field][$lang];
++	} else
++	{
++		$deltas = $form_state['values'][$field][$lang];
++	};
++	$actual_delta = 0;
+     foreach ($deltas as $delta) {
+        // Add the Administrative Area name, if possible
+        if(isset($form[$field][$lang][$actual_delta]['locality_block']['administr
+ ative_area']['#options'])) {
+          $options = $form[$field][$lang][$actual_delta]['locality_block']['admin
+ istrative_area']['#options'];
+@@ -197,26 +205,33 @@
+   $limit = 10;
+   // iterate through the next group of addresses
+   $i = 0;
+   $saved = 0;
+   $taxonomize = array();
+   if (!empty($context['sandbox']['fields'])) {
+-    foreach ($context['sandbox']['fields'] as $nid => $fields) {
+-      $node = node_load($nid);
++    /*foreach ($context['sandbox']['fields'] as $nid => $fields) {
++      $node = node_load($nid);*/
++	foreach ($context['sandbox']['fields'] as $eid => $fields) {
++      $entity = entity_load($eid);
+       foreach ($fields as $field) {
+-        $items = field_get_items('node', $node, $field);
++        //$items = field_get_items('node', $node, $field);
++		$items = field_get_items('entity', $entity, $field);
+         foreach ($items as $address) {
+           // Add the country name
+           $address['country_name'] = location_taxonomize_get_country_name($addre
+ ss['country']);
+-          $taxonomize[$nid][] = $address;
++          //$taxonomize[$nid][] = $address;
++		  $taxonomize[$eid][] = $address;
+         }
+         $i++;
+-        array_shift($context['sandbox']['fields'][$nid]);
++        /*array_shift($context['sandbox']['fields'][$nid]);
+         if (empty($context['sandbox']['fields'][$nid])) {
+-          unset($context['sandbox']['fields'][$nid]);
++          unset($context['sandbox']['fields'][$nid]);*/
++		 array_shift($context['sandbox']['fields'][$eid]);
++        if (empty($context['sandbox']['fields'][$eid])) {
++          unset($context['sandbox']['fields'][$eid]); 
+         }
+       }
+       if ($i > $limit) break;
+     }
+     // taxonomize
+     $results = location_taxonomize_taxonomize_bulk($taxonomize);
+
+ 

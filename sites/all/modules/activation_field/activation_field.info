@@ -1,0 +1,10 @@
+name = "Activation Field"
+description = "Stores data for activation codes"
+package = Outdoorfolks Custom Modules
+core = 7.x
+
+files[] = activation_field.module   
+files[] = activation_field.install
+
+
+

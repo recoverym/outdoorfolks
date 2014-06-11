@@ -1,0 +1,30 @@
+From cc0799496388983e9189f5159a5aa73c50b749aa Mon Sep 17 00:00:00 2001
+From: Michael Nielson <michael@opensourcery.com>
+Date: Thu, 8 Aug 2013 10:01:14 -0700
+Subject: [PATCH] Filled out bundles in entity info hook to resolve undefined
+ index warning.
+
+---
+ message.module |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/message.module b/message.module
+index bd44e02..517ff6f 100644
+--- a/message.module
++++ b/message.module
+@@ -139,7 +139,11 @@ function message_entity_info() {
+       'name' => 'name',
+       'bundle' => 'category',
+     ),
+-    'bundles' => array(),
++    'bundles' => array(
++      'message_type' => array(
++        'label' => t('Message type'),
++      ),
++    ),
+     'bundle keys' => array(
+       'bundle' => 'category',
+     ),
+-- 
+1.7.10.4
+

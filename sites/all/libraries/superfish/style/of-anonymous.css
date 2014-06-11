@@ -1,0 +1,114 @@
+.sf-menu.sf-style-of-anonymous {
+  float: right;
+  /*margin-bottom: 1em;
+  margin-top:40px;*/
+  padding: 0;
+}
+.sf-menu.sf-style-of-anonymous.sf-navbar {
+  width: 100%;
+}
+.sf-menu.sf-style-of-anonymous ul {
+  padding-left: 0;
+}
+.sf-menu.sf-style-of-anonymous a {
+  color: #ffffff;
+  padding: 1.25em 1em;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+.sf-menu.sf-style-of-anonymous a.sf-with-ul {
+  padding-right: 1em 2.25em 0.5em 0;
+}
+.sf-menu.sf-style-of-anonymous.rtl a.sf-with-ul {
+  padding-left: 2.25em;
+  padding-right: 1em;
+}
+.sf-menu.sf-style-of-anonymous.sf-navbar a {
+  border: 0;
+}
+.sf-menu.sf-style-of-anonymous span.sf-description {
+  color: #ffffff;
+  display: block;
+  font-size: 0.8em;
+  line-height: 1.5em;
+  margin: 5px 0 0 5px;
+  padding: 0;
+}
+.sf-menu.sf-style-of-anonymous li,
+.sf-menu.sf-style-of-anonymous.sf-navbar {
+  background: #f0f4f4;
+  margin: 0 0 0 0;
+}
+.sf-menu.sf-style-of-anonymous li li {
+  background: #f0f4f4;
+}
+.sf-menu.sf-style-of-anonymous li li li {
+  background: #f0f4f4;
+}
+.sf-menu.sf-style-of-anonymous li:hover,
+.sf-menu.sf-style-of-anonymous li.sfHover,
+.sf-menu.sf-style-of-anonymous li.active a,
+.sf-menu.sf-style-of-anonymous a:focus,
+.sf-menu.sf-style-of-anonymous a:hover,
+.sf-menu.sf-style-of-anonymous a:active,
+.sf-menu.sf-style-of-anonymous.sf-navbar li li {
+  background: #f0f4f4;
+}
+.sf-menu.sf-style-of-anonymous.sf-navbar li ul {
+  background-color: #f0f4f4;
+}
+.sf-menu.sf-style-of-anonymous.sf-navbar li ul li ul {
+  background-color: transparent;
+}
+.sf-menu.sf-style-of-anonymous .sf-sub-indicator {
+  background-image: url('../images/arrows-777777.png');
+}
+.sf-menu.sf-style-of-anonymous.rtl .sf-sub-indicator {
+  background-image: url('../images/arrows-777777-rtl.png');
+}
+.sf-menu.sf-style-of-anonymous ul.sf-megamenu li.sf-megamenu-wrapper ol,
+.sf-menu.sf-style-of-anonymous ul.sf-megamenu li.sf-megamenu-wrapper ol li {
+  margin: 0;
+  padding: 0;
+}
+.sf-menu.sf-style-of-anonymous ul.sf-megamenu li.sf-megamenu-wrapper a.menuparent {
+  font-weight: bold;
+}
+.sf-menu.sf-style-of-anonymous ul.sf-megamenu li.sf-megamenu-wrapper ol li.sf-megamenu-column {
+  display: inline;
+  float: left;
+  width: 12em;
+}
+.sf-menu.sf-style-of-anonymous.rtl ul.sf-megamenu li.sf-megamenu-wrapper ol li.sf-megamenu-column {
+  float: right;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-1 ul.sf-megamenu {
+  width: 12em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-2 ul.sf-megamenu {
+  width: 24em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-3 ul.sf-megamenu {
+  width: 36em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-4 ul.sf-megamenu {
+  width: 48em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-5 ul.sf-megamenu {
+  width: 60em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-6 ul.sf-megamenu {
+  width: 72em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-7 ul.sf-megamenu {
+  width: 84em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-8 ul.sf-megamenu {
+  width: 96em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-9 ul.sf-megamenu {
+  width: 108em;
+}
+.sf-menu.sf-style-of-anonymous li.sf-parent-children-10 ul.sf-megamenu {
+  width: 120em;
+}

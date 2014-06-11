@@ -1,0 +1,869 @@
+<?php
+
+function outdoorfolks_apachesolr_query_alter($query) {
+ $query->addParam('fl', 'geos_field_location');
+ $query->addParam('fl', 'geos_field_posizione_offerta');
+ $query->addParam('fl', 'ss_field_image_uri');
+ $query->addParam('fl', 'ss_field_immagine_prodotto_uri');
+ $query->addParam('fl','sm_field_outdoor_recreation');
+ $query->addParam('fl','im_field_regione_e_provincia');
+ $query->addParam('fl','im_field_attivita');
+ $query->addParam('fl', 'sm_activities_it');
+ $query->addParam('fl', 'sm_activities_en');
+ $query->addParam('fl', 'sm_regprov_it');
+ $query->addParam('fl', 'sm_regprov_en');
+ $query->addParam('fl', 'sm_attivita_it');
+ $query->addParam('fl', 'sm_attivita_en');
+ $query->addParam('fl', 'sm_denominazione_provider');
+ $query->addParam('fl', 'sm_price');
+
+}
+
+/**
+ * Implements hook_menu().
+ */
+/*function outdoorfolks_menu() {
+  $items['user/register/%'] = array(
+      'title' => 'Create new account',
+      'page callback' => 'outdoorfolks_ctools_wizard',
+      'page arguments' => array(2),
+      'access callback' => 'outdoorfolks_access',
+      'access arguments' => array(2),
+      'file' => 'outdoorfolks_ctools_wizard.inc',
+      'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}*/
+
+/**
+ * Implements hook_block_info().
+ */
+/*function outdoorfolks_block_info() {
+  $blocks = array();
+  $blocks['enter_places'] = array(
+      'info' => t('Scopri il territorio'),
+  );
+  $blocks['enter_magazine'] = array(
+      'info' => t('Sfoglia il magazine'),
+  );
+  $blocks['enter_maps'] = array(
+      'info' => t('Visualizza le mappe'),
+  );
+  return $blocks;
+}*/
+
+/**
+ * Implements hook_block_configure().
+ */
+/*function outdoorfolks_block_configure($delta='') {
+  $form = array();
+
+  switch($delta) {
+    case 'enter_places' :
+      // Text field form element
+      $form['text_body'] = array(
+      '#type' => 'text_format',
+      '#title' => t('Enter your text here in WYSIWYG format'),
+      '#default_value' => variable_get('places_text', ''),
+      );
+
+      // File selection form element
+      $form['file'] = array(
+          '#name' => 'block_image',
+          '#type' => 'managed_file',
+          '#title' => t('Choose an Image File'),
+          '#description' => t('Select an Image for the custom block.  Only *.gif, *.png, *.jpg, and *.jpeg images allowed.'),
+          '#default_value' => variable_get('places_image_fid', ''),
+          '#upload_location' => 'public://',
+          '#upload_validators' => array(
+              'file_validate_extensions' => array('gif png jpg jpeg'),
+          ),
+      );
+      break;
+      case 'enter_magazine' :
+        // Text field form element
+        $form['text_body'] = array(
+        '#type' => 'text_format',
+        '#title' => t('Enter your text here in WYSIWYG format'),
+        '#default_value' => variable_get('mag_text', ''),
+        );
+
+        // File selection form element
+        $form['file'] = array(
+            '#name' => 'block_image',
+            '#type' => 'managed_file',
+            '#title' => t('Choose an Image File'),
+            '#description' => t('Select an Image for the custom block.  Only *.gif, *.png, *.jpg, and *.jpeg images allowed.'),
+            '#default_value' => variable_get('mag_image_fid', ''),
+            '#upload_location' => 'public://',
+            '#upload_validators' => array(
+                'file_validate_extensions' => array('gif png jpg jpeg'),
+            ),
+        );
+        break;
+        case 'enter_maps' :
+          // Text field form element
+          $form['text_body'] = array(
+          '#type' => 'text_format',
+          '#title' => t('Enter your text here in WYSIWYG format'),
+          '#default_value' => variable_get('map_text', ''),
+          );
+
+          // File selection form element
+          $form['file'] = array(
+              '#name' => 'block_image',
+              '#type' => 'managed_file',
+              '#title' => t('Choose an Image File'),
+              '#description' => t('Select an Image for the custom block.  Only *.gif, *.png, *.jpg, and *.jpeg images allowed.'),
+              '#default_value' => variable_get('map_image_fid', ''),
+              '#upload_location' => 'public://',
+              '#upload_validators' => array(
+                  'file_validate_extensions' => array('gif png jpg jpeg'),
+              ),
+          );
+          break;
+  }
+  return $form;
+}*/
+
+/**
+ * Implements hook_block_save().
+ */
+/*function outdoorfolks_block_save($delta = '', $edit = array()) {
+  switch($delta) {
+    case 'enter_places' :
+      // Saving the WYSIWYG text
+      variable_set('places_text', $edit['text_body']['value']);
+
+      // Saving the file, setting it to a permanent state, setting a FID variable
+      $file = file_load($edit['file']);
+      $file->status = FILE_STATUS_PERMANENT;
+      file_save($file);
+      $block = block_load('outdoorfolks', $delta);
+      file_usage_add($file, 'outdoorfolks', 'block', $block->bid);
+      variable_set('places_image_fid', $file->fid);
+    break;
+    case 'enter_magazine' :
+      // Saving the WYSIWYG text
+      variable_set('mag_text', $edit['text_body']['value']);
+
+      // Saving the file, setting it to a permanent state, setting a FID variable
+      $file = file_load($edit['file']);
+      $file->status = FILE_STATUS_PERMANENT;
+      file_save($file);
+      $block = block_load('outdoorfolks', $delta);
+      file_usage_add($file, 'outdoorfolks', 'block', $block->bid);
+      variable_set('mag_image_fid', $file->fid);
+    break;
+    case 'enter_maps' :
+      // Saving the WYSIWYG text
+      variable_set('map_text', $edit['text_body']['value']);
+
+      // Saving the file, setting it to a permanent state, setting a FID variable
+      $file = file_load($edit['file']);
+      $file->status = FILE_STATUS_PERMANENT;
+      file_save($file);
+      $block = block_load('outdoorfolks', $delta);
+      file_usage_add($file, 'outdoorfolks', 'block', $block->bid);
+      variable_set('map_image_fid', $file->fid);
+      break;
+  }
+}*/
+
+/**
+ * Implements hook_block_view().
+ *
+ * This hook generates the contents of the blocks themselves.
+ */
+/*function outdoorfolks_block_view($delta = '') {
+  switch ($delta) {
+    case 'enter_places':
+      $block['content'] = t(outdoorfolks_block_contents($delta));
+      break;
+    case 'enter_magazine':
+      $block['content'] = outdoorfolks_block_contents($delta);
+      break;
+    case 'enter_maps':
+      $block['content'] = outdoorfolks_block_contents($delta);
+      break;
+  }
+  return $block;
+}*/
+
+/**
+ * A module-defined block content function.
+ */
+/*function outdoorfolks_block_contents($delta) {
+
+  $block = array();
+
+  switch ($delta) {
+    case 'enter_places':
+      $image_file = file_load(variable_get('places_image_fid', ''));
+      $text = variable_get('places_text', '');
+      $box_id = 'box-1';
+      break;
+    case 'enter_magazine':
+      $image_file = file_load(variable_get('mag_image_fid', ''));
+      $text = variable_get('mag_text', '');
+      $box_id = 'box-2';
+      break;
+    case 'enter_maps':
+     $image_file = file_load(variable_get('map_image_fid', ''));
+     $text = variable_get('map_text', '');
+     $box_id = 'box-3';
+      break;
+  }
+
+  $image_path = '';
+
+  if (isset($image_file->uri)) {
+    $image_path = $image_file->uri;
+  }
+
+  $image = theme_image(array(
+    'path' => ($image_path),
+    'alt' => t('Image description here.'),
+    'title' => t('This is our block image.'),
+    'attributes' => array('class' => 'class_name'),
+  ));
+
+  $src = file_create_url($image_path);
+
+  // Block output in HTML with div wrapper
+  $block = array(
+    /*'image' => array(
+      '#prefix' => '<div id="'.$box_id.'" class="box">',
+      '#type' => 'markup',
+      '#markup' => $image,
+    ),
+    'message' => array(
+      '#prefix' => ' <span class="caption slide-caption">',
+      '#type' => 'markup',
+      '#markup' => $text,
+      '#suffix' => '</span></div>',
+    ),*/
+     /* 'message' => array(
+          '#prefix' => '<div id="'.$box_id.'" class="box" style="background-image: url('.$src.');"><span class="caption slide-caption">',
+          '#type' => 'markup',
+          '#markup' => t($text),
+          '#suffix' => '</span></div>',
+      ),
+  );
+
+  return $block;
+}*/
+
+/* * Implements hook_email_registration_name(). */
+function outdoorfolks_email_registration_name($edit, $account) {
+  $debug = 0;
+  //return $account->mail;
+}
+
+function outdoorfolks_apachesolr_process_results(array &$results, DrupalSolrQueryInterface $query) {
+  foreach ($results as $id => $result) {
+    //$results[$id]['activities'] = t('[Result] !activity', $result['fields']['sm_field_outdoor_recreation']);
+    if(!empty($result['fields']['im_field_attivita'])){
+      $results[$id]['activities'] = t('[Result] !activity', $result['fields']['im_field_attivita']);
+    }
+  }
+}
+
+function outdoorfolks_apachesolr_index_document_build(ApacheSolrDocument $document, $entity, $entity_type, $env_id) {
+
+  $debug=0;
+
+  if(isset($entity->field_immagine_prodotto['und']['0']['uri'])){
+    $document->addField('ss_field_immagine_prodotto_uri', $entity->field_immagine_prodotto['und']['0']['uri']);
+  }
+
+  if(isset($entity->field_image['und']['0']['uri'])){
+    $document->addField('ss_field_image_uri', $entity->field_image['und']['0']['uri']);
+  }
+
+  // Index field_main_image as a separate field
+  if ($entity->type == 'display_proposta') {
+
+    $profile = profile2_load_by_user($entity->uid,'service_provider');
+    if(isset($profile->field_denominazione[LANGUAGE_NONE])){
+      $denominazione = $profile->field_denominazione[LANGUAGE_NONE][0]['value'];
+      $document->addField('sm_denominazione_provider', $denominazione);
+
+      //$denominazione_formatted = '<a href="users/'. $entity->name .'">'. $denominazione .'</a>';
+      //$document->addField('sm_denominazione_provider', $denominazione_formatted);
+    }
+    //$user = user_load(array('uid' => $entity->uid));
+    // Hard coded field, not recommended for inexperienced users.
+    //$document->setMultiValue('sm_field_main_image', $user->picture);
+
+    if(isset($entity->field_product_reference[LANGUAGE_NONE])){
+      $product = commerce_product_load($entity->field_product_reference[LANGUAGE_NONE][0]['product_id']);
+      //$price = entity_metadata_wrapper('commerce_product', $product)->commerce_price->value();
+      $price = commerce_product_calculate_sell_price($product);
+      $price_display = commerce_currency_format($price['amount'], $price['currency_code'], $product);
+      $document->addField('sm_price', $price_display);
+    }
+    $debug=0;
+  }
+}
+
+function outdoorfolks_apachesolr_multilingual_index_document_alter(&$document, $document_language, $entity, $entity_type, $env_id){
+
+  global $base_url;
+  $node_wrapper = entity_metadata_wrapper($entity_type, $entity);
+
+  if(!empty($document->sm_field_outdoor_recreation)){
+
+        $values = $node_wrapper->field_outdoor_recreation->raw();
+        if (!empty($values)) {
+          // Make values an array.
+          $values = is_array($values) ? $values : array($values);
+          $term = entity_load('taxonomy_term', $values);
+
+          foreach ($term as $key => $value) {
+            if(empty($value->name_field[$document_language])){
+              $path = drupal_get_path_alias('taxonomy/term/'.$key, LANGUAGE_NONE);
+              $link = '<a href="'.$base_url .'/'. $document_language .'/'. $path.'">'.$value->name_field[LANGUAGE_NONE][0]['value'].'</a>';
+            }
+            else{
+              $path = drupal_get_path_alias('taxonomy/term/'.$key, $document_language);
+              $link = '<a href="'.$base_url .'/'. $document_language .'/'. $path.'">'.$value->name_field[$document_language][0]['value'].'</a>';
+            }
+            $document->addField('sm_activities_'.$document_language, $link);
+           }
+        }
+    }
+
+    if(!empty($document->im_field_attivita)){
+
+      $values = $node_wrapper->field_attivita->raw();
+      if (!empty($values)) {
+        // Make values an array.
+        $values = is_array($values) ? $values : array($values);
+        $term = entity_load('taxonomy_term', $values);
+
+        foreach ($term as $key => $value) {
+          if(empty($value->name_field[$document_language])){
+            $path = drupal_get_path_alias('taxonomy/term/'.$key, LANGUAGE_NONE);
+            $link = '<a href="'.$base_url .'/'. $document_language .'/'. $path.'">'.$value->name_field[LANGUAGE_NONE][0]['value'].'</a>';
+          }
+          else{
+            $path = drupal_get_path_alias('taxonomy/term/'.$key, $document_language);
+            $link = '<a href="'.$base_url .'/'. $document_language .'/'. $path.'">'.$value->name_field[$document_language][0]['value'].'</a>';
+          }
+          $document->addField('sm_attivita_'.$document_language, $link);
+        }
+      }
+    }
+
+    if(!empty($document->im_field_regione_e_provincia)){
+      $values = $node_wrapper->field_regione_e_provincia->raw();
+
+      if (!empty($values)) {
+        // Make values an array.
+        $values = is_array($values) ? $values : array($values);
+
+        // Do something interesting with $values.
+        $term = entity_load('taxonomy_term', $values);
+        foreach ($term as $key => $value) {
+          if(empty($value->name_field[$document_language])){
+            $document->addField('sm_regprov_'.$document_language, $value->name_field[LANGUAGE_NONE][0]['value']);
+          }
+          else{
+            $document->addField('sm_regprov_'.$document_language, $value->name_field[$document_language][0]['value']);
+          }
+          $debug=0;
+        }
+      }
+
+    }
+
+
+
+}
+
+
+/**
+ * Implementation of hook_action_info().
+ */
+function outdoorfolks_action_info() {
+  $action = array(
+      'outdoorfolks_mark_order_item_as_spent' => array(
+          'label' => t('Mark order item as spent'),
+          'type' => 'entity',
+          'configurable' => FALSE,
+          'triggers' => array('any'),
+      ),
+      'outdoorfolks_activate_deal' => array(
+          'label' => t('Activate code'),
+          'type' => 'entity',
+          'configurable' => FALSE,
+          'triggers' => array('any'),
+      ),
+  );
+  return $action;
+}
+
+
+/**
+ * Action function for MY_ACTION_NAME.
+ */
+function outdoorfolks_mark_order_item_as_spent(&$entity, $context = array()) {
+  // Your code here.
+  $debug=0;
+  if ($context['entity_type'] == 'commerce_line_item' && $entity->type == 'product'){
+    if (!empty($entity->field_order_item_has_been_spent)) {
+     $query = db_update('field_data_field_order_item_has_been_spent')
+      ->fields(array('field_order_item_has_been_spent_value' => '1'))
+      ->condition('entity_id',$entity->line_item_id)
+      ->condition('field_activation_codes_code', $code)
+      ->execute();
+    }
+  }
+}
+
+function outdoorfolks_activate_deal(&$entity, $context = array()) {
+  // Your code here.
+  $debug=0;
+  if ($context['entity_type'] == 'commerce_line_item' && $entity->type == 'deal'){
+    if (!empty($context['view_info']['exposed_input']['field_activation_codes_code'])) {
+      $code = $context['view_info']['exposed_input']['field_activation_codes_code'];
+      if (!empty($entity->field_activation_codes)) {
+
+        $query = db_update('field_data_field_activation_codes')
+         ->fields(array('field_activation_codes_activated' => '1'))
+         ->condition('entity_id',$entity->line_item_id,'=')
+         ->condition('field_activation_codes_code', $code, '=')
+        ->execute();
+
+        drupal_flush_all_caches();
+
+        //cache_clear_all('*', 'cache_views', TRUE);
+        //cache_clear_all();
+
+      }
+    }
+  }
+}
+
+
+function outdoorfolks_commerce_entity_access_condition_commerce_order_alter(&$conditions, $context) {
+
+  $account = $context['account'];
+  $entity_type = $context['entity_type'];
+  $base_table = $context['base_table'];
+
+  // Get the entity type info array for the current access check.
+  $entity_info = entity_get_info($entity_type);
+
+  $orders = commerce_order_load_multiple(array(), array('status' => 'completed'), TRUE);
+
+  foreach($orders as $order) {
+    foreach ($order->commerce_line_items['und'] as $line) {
+      $line_item = commerce_line_item_load($line['line_item_id']);
+      $product_id = $line_item->commerce_product['und'][0]['product_id'];
+      $product_item = commerce_product_load($product_id);
+      $product_uid = $product_item->uid;
+      if($product_uid == $account->uid){
+        $allowed_order_ids[]=$order->order_id;
+      }
+    }
+  }
+
+  if (!empty($allowed_order_ids)) {
+    // Check to see if $user has the administrator role.
+    if (in_array('provider', array_values($account->roles))) {
+      // Do something.
+      $conditions->condition($context['base_table'] . '.order_id', $allowed_order_ids, 'IN');
+    }
+  }
+}
+
+
+/**
+ * Alter ADD TO CART form
+ * Splits quantities in the Add to Cart process into different line items
+ * Implements hook_form_FORM_ID_alter().
+*/
+/*function outdoorfolks_form_commerce_cart_add_to_cart_form_alter(&$form, &$form_state) {
+  $line_item = $form_state['line_item'];
+  $product = commerce_product_load($line_item->commerce_product[LANGUAGE_NONE][0]['product_id']);
+  if ($product->type == 'proposta') {
+    unset($form['#submit'][0]);
+    array_unshift($form['#submit'], 'outdoorfolks_add_to_cart_form_submit');
+
+  }
+}*/
+
+/**
+ * Form submit handler: add the selected product to the cart.
+ */
+/*function outdoorfolks_add_to_cart_form_submit($form, &$form_state) {
+  $product_id = $form_state['values']['product_id'];
+  $product = commerce_product_load($product_id);
+
+  // If the line item passed to the function is new...
+ if (empty($form_state['line_item']->line_item_id)) {
+    // Create the new product line item of the same type.
+   $quantity = $form_state['values']['quantity'];
+   for ($i=0;$i<$quantity;$i++){
+
+     $line_item = commerce_product_line_item_new($product, 1, 0, $form_state['line_item']->data, $form_state['line_item']->type);
+
+    // Allow modules to prepare this as necessary. This hook is defined by the
+    // Product Pricing module.
+    drupal_alter('commerce_product_calculate_sell_price_line_item', $line_item);
+
+    // Remove line item field values the user didn't have access to modify.
+    foreach ($form_state['values']['line_item_fields'] as $field_name => $value) {
+      // Note that we're checking the Commerce Cart settings that we inserted
+      // into this form element array back when we built the form. This means a
+      // module wanting to alter a line item field widget to be available must
+      // update both its form element's #access value and the field_access value
+      // of the #commerce_cart_settings array.
+      if (empty($form['line_item_fields'][$field_name]['#commerce_cart_settings']['field_access'])) {
+        unset($form_state['values']['line_item_fields'][$field_name]);
+      }
+    }
+
+    // Unset the line item field values array if it is now empty.
+    //if (empty($form_state['values']['line_item_fields'])) {
+      //unset($form_state['values']['line_item_fields']);
+    //}
+
+    // Add field data to the line item.
+    field_attach_submit('commerce_line_item', $line_item, $form['line_item_fields'], $form_state);
+
+    // Process the unit price through Rules so it reflects the user's actual
+    // purchase price.
+    rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
+
+    // Only attempt an Add to Cart if the line item has a valid unit price.
+    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+    if (!is_null($line_item_wrapper->commerce_unit_price->value())) {
+      // Add the product to the specified shopping cart.
+      $form_state['line_item'] = commerce_cart_product_add(
+          $form_state['values']['uid'],
+          $line_item,
+          isset($line_item->data['context']['add_to_cart_combine']) ? $line_item->data['context']['add_to_cart_combine'] : TRUE
+      );
+    }
+    else {
+      drupal_set_message(t('%title could not be added to your cart.', array('%title' => $product->title)), 'error');
+    }
+    $debug=0;
+  }
+ }
+}
+
+function outdoorfolks_commerce_cart_product_add($order, $product, $quantity, $line_item) {
+  // No example.
+
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+  if (is_null($line_item_wrapper->commerce_unit_price->value())) {
+    return FALSE;
+  }
+
+  // Wrap the order for easy access to field data.
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+  for ($i=0;$i<$quantity-1;$i++){
+
+
+    $new_line_item = commerce_line_item_new($line_item->type, $line_item->order_id);
+    $new_line_item->line_item_label = $line_item->line_item_label;
+
+    $product = $line_item_wrapper->commerce_product->value();
+    //$quantity = $line_item->quantity;
+
+    $new_line_item->data = array_merge($line_item->data, $new_line_item->data);
+    $new_line_item->commerce_product = array_merge($line_item->commerce_product);
+    $new_line_item->commerce_display_path = array_merge($line_item->commerce_display_path);
+    $new_line_item->commerce_unit_price = array_merge($line_item->commerce_unit_price);
+
+    $c=commerce_line_item_save($new_line_item);
+    $order_wrapper->commerce_line_items[] = $new_line_item;
+    //commerce_order_save($order);
+  }
+
+
+  // If no matching line item was found...
+  //if (empty($matching_line_item)) {
+    // Save the incoming line item now so we get its ID.
+    $line_item_wrapper->quantity = 1;
+    commerce_line_item_save($line_item);
+    commerce_order_save($order);
+
+}
+*/
+
+/**
+ * Implements hook_commerce_line_item_type_info().
+ */
+function outdoorfolks_commerce_line_item_type_info() {
+  return array(
+      'deal' => array(
+          'name' => t('Deal'),
+          'product' => TRUE,
+          'description' => t('References a deal.'),
+          'add_form_submit_value' => t('Add to cart'),
+          'base' => 'commerce_product_line_item',
+      ),
+  );
+}
+
+/**
+ * Implements hook_theme_registry_alter
+ *
+ * Update the theme registry so our theme_example_mlt_recommendation_block() is used
+ * instead of the default when theme('apachesolr_search_mlt_recommendeation_block'...) is called.
+ */
+function outdoorfolks_theme_registry_alter(&$theme_registry) {
+
+  $theme_registry['apachesolr_search_noresults']['function'] = 'theme_outdoorfolks_apachesolr_search_noresults';
+
+  // Set the path to this module, so the theme knows where to find the theming function we defined above.
+  $theme_registry['apachesolr_search_noresults']['theme path'] = drupal_get_path('module', 'outdoorfolks');
+}
+
+function theme_outdoorfolks_apachesolr_search_noresults() {
+  $debug = 0;
+  return t('<h2>Your search yielded no results</h2><ul>
+      <li>Check if your spelling is correct, or try removing filters.</li>
+      <li>Remove quotes around phrases to match each word individually: <em>"blue drop"</em> will match less than <em>blue drop</em>.</li>
+      <li>You can require or exclude terms using + and -: <em>big +blue drop</em> will require a match on <em>blue</em> while <em>big blue -drop</em> will exclude results that contain <em>drop</em>.</li>
+      </ul>');
+}
+
+/**
+ * Implements hook_enable().
+ */
+function outdoorfolks_enable() {
+  commerce_product_line_item_configuration(array('type'=>'deal'));
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ */
+function outdoorfolks_form_views_exposed_form_alter(&$form, &$form_state){
+  switch($form['#id']){
+    case 'views-exposed-form-cerca-offerte-per-attivita-panel-pane-1':
+      $form['#submit'][] = 'outdoorfolks_search_deals_form_submit';
+    break;
+    case 'views-exposed-form-commerce-backoffice-providers-deals-page-1':
+      $form['field_outdoor_recreation_target_id']['#attributes']['data-placeholder'] = t('Filter by activity');
+    break;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+/*function outdoorfolks_form_user_register_alter(&$form, &$form_state) {
+  $form['#submit'] = array(
+      'user_register_submit',
+      'ctools_wizard_submit',
+  );
+}*/
+
+
+/**
+ * Implements hook_views_pre_build().
+*/
+function outdoorfolks_views_pre_build(&$view) {
+
+ global $base_url;
+ global $language;
+
+  if ($view->name == 'proposte_per_attivita'){
+    //$link = $base_url .'/'. $language->language . '/search/deals/?f[0]=sm_field_outdoor_recreation%3Ataxonomy_term%3A' . $view->args[0];
+    $link = $base_url .'/'. $language->language . '/marketplace/?f[0]=im_field_attivita%3A' . $view->args[0];
+    $view->display_handler->options['link_url'] = $link;
+  }
+
+  if ($view->name == 'articoli_per_attivita'){
+    //$link = $base_url .'/'. $language->language . '/search/deals/?f[0]=sm_field_outdoor_recreation%3Ataxonomy_term%3A' . $view->args[0];
+    $link = $base_url .'/'. $language->language . '/magazine/?f[0]=im_field_attivita%3A' . $view->args[0];
+    $view->display_handler->options['link_url'] = $link;
+  }
+}
+
+function outdoorfolks_search_deals_form_submit($form, &$form_state){
+    global $base_url;
+    global $language;
+
+    if(!empty($form_state['view']->exposed_input['tid'])){
+      if (isset($_GET['destination'])) {
+        unset($_GET['destination']);
+      }
+    $form_state['no_redirect'] = FALSE;
+    if($form_state['view']->exposed_input['tid'] == 'All'){
+      //$link = $base_url .'/'. $language->language . '/search/deals';
+      $link = $base_url .'/'. $language->language . '/marketplace';
+    }
+    else{
+      //$link = $base_url .'/'. $language->language . '/search/deals/?f[0]=sm_field_outdoor_recreation%3Ataxonomy_term%3A' . $form_state['view']->exposed_input['tid'];
+      $link = $base_url .'/'. $language->language . '/marketplace/?f[0]=im_field_attivita%3A' . $form_state['view']->exposed_input['tid'];
+    }
+    $form_state['redirect']  = $link;
+  }
+}
+
+function outdoorfolks_field_widget_addressfield_standard_form_alter(&$element, $form_state, $context) {
+  $debug=0;
+  if(!empty($element['#addressfield'])) {
+    unset($element['street_block']['premise']);
+    $title = $element['street_block']['thoroughfare']['#title'];
+    $element['street_block']['thoroughfare']['#title'] = substr($title,0,-1);
+  }
+}
+
+function outdoorfolks_form_user_login_alter(&$form, &$form_state, $form_id){
+  $debug = 0;
+  global $base_url;
+  global $language;
+
+  $pwd_link =  $base_url .'/'. $language->language . '/user/password';
+  $form['lost_pwd'] = array(
+         '#type' => 'markup',
+         '#markup' => '<div class="lost-pwd">' .t('Lost password? <a href="'.$pwd_link.'">Click here</a>') .'</div>',
+   );
+}
+
+/*function outdoorfolks_inline_entity_form_reference_form_alter(&$reference_form, &$form_state) {
+	$reference_form['entity_id']['description'] = t('New autocomplete description');
+}
+
+function outdoorfolks_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
+	if ($entity_form['#entity_type'] == 'commerce_product') {
+		$entity_form['commerce_price']['und']['#title'] = t('New quantity description.');
+		$entity_form['commerce_price']['und'][0]['#title'] = t('New quantity description.');
+	}
+}
+
+function outdoorfolks_field_widget_inline_entity_form_single_form_alter(&$element, &$form_state, $context){
+	$debug=0;
+    if($element['form']['#entity_type']=='commerce_product'){
+    	$element['form']['commerce_price']['#title']=t('Price (VAT included).');
+    	$element['form']['commerce_price']['und']['#title']=t('Price (VAT included).');
+    	$element['form']['commerce_price']['und'][0]['#title']=t('Price (VAT included).');
+    	foreach ($element['form']['commerce_price']['#fieldset'] as $key => $value) {
+    		$debug=0;
+    	}
+    	$debug=0;
+    }
+
+}
+function outdoorfolks_form_display_proposta_node_form_alter(&$form, &$form_state, $form_id){
+	$debug=0;
+}*/
+
+
+function outdoorfolks_form_user_register_form_alter(&$form, &$form_state, $form_id){
+
+  global $base_url;
+  global $language;
+
+  $tos_alias = $base_url .'/'. $language->language . '/tos';
+  $pp_alias = $base_url .'/'. $language->language . '/privacy_policy';
+  $partnership_link = $base_url .'/'. $language->language . '/partnership';
+
+  switch ($language->language){
+    case "en":
+      $terms= 'I agree to the <a href="' .$tos_alias. '">Terms of Service</a> and <a href="' .$pp_alias. '">Privacy Policy</a>.';
+      break;
+    default:
+      $terms= 'Ho letto ed accetto i <a href="' .$tos_alias. '">Termini del Servizio</a> e la <a href="' .$pp_alias. '">Privacy Policy</a>.';
+     break;
+  }
+
+  // Add a checkbox to registration form about agreeing to terms of use.
+  $form['terms_of_use'] = array(
+      '#type' => 'checkbox',
+      '#title' => t($terms),
+      '#required' => TRUE,
+  );
+
+  $current_path = current_path();
+  $message ='';
+
+  switch ($current_path){
+    case "user/register":
+      // Add a link to registration profiles.
+      $form['partner_registration'] = array(
+         '#type' => 'markup',
+         '#markup' => '<div class="partner">' .t('Sei un operatore del settore? <a href="'.$partnership_link.'">Fai clic qui</a> per scoprire i vantaggi di una <a href="'.$partnership_link.'">partnership con Outdoorfolks</a>.').'</div>',
+         '#description' =>'<div class="description">'.t("Registra la tua azienda o organizzazione. Promuovi la tua attività e inizia a pubblicare le tue offerte sul marketplace.").'</div>',
+      );
+      break;
+    case "provider/register":
+      $message = t('Welcome Providers');
+      $form['personal_data'] = array(
+          '#type' => 'markup',
+          '#markup' => '<h3 class="pane-title">' .t('Personal Data').'</h3>',
+          '#description' =>'<div class="description">'.t("The user who manages the profile").'</div>',
+      );
+      $form['other_data'] = array(
+          '#type' => 'markup',
+          '#markup' =>'<h3 class="pane-title">'. t('Business Data') .'</h3>',
+          //'#title' =>$other_data,
+          //'#description' =>'descrizione altri dati',
+      );
+      break;
+    case "partner/register":
+      $message = t('Welcome Partners');
+      $form['personal_data'] = array(
+          '#type' => 'markup',
+          '#markup' => '<h3 class="pane-title">' .t('Personal Data').'</h3>',
+          '#description' =>'<div class="description">'.t("The user who manages the profile").'</div>',
+      );
+      $form['other_data'] = array(
+          '#type' => 'markup',
+          '#markup' =>'<h3 class="pane-title">'. t('Organization Data') .'</h3>',
+          //'#title' =>$other_data,
+          //'#description' =>'descrizione altri dati',
+      );
+      break;
+    }
+
+    $form['message'] = array(
+        '#type' => 'markup',
+        '#markup' =>'<p>'. $message .'</p>',
+        '#title' =>'<p>'. $message .'</p>',
+    );
+
+}
+
+function outdoorfolks_menu_alter(&$items) {
+  // Removing certain local navigation tabs that are either undesired or need to be custom relocated.
+  // Set these tabs to MENU_CALLBACK, so they still register the path, but just don't show the tab:
+  //$items['node/%node/track']['type'] = MENU_CALLBACK;
+  //$items['user/%user/track']['type'] = MENU_CALLBACK;
+  $items['search/site']['type'] = MENU_CALLBACK;
+  $items['search/deals']['type'] = MENU_CALLBACK;
+  $items['search/users']['type'] = MENU_CALLBACK;
+  // Fully unset these tabs and their paths, don't want them at all. This breaks the path as well:
+  unset($items['user/%user/example']);
+
+/*  $items['user/register']['page callback'] = array('outdoorfolks_ctools_wizard');
+  // Pass the "first" step key to start the form on step 1 if no step has been specified.
+  $items['user/register']['page arguments'] = array('register');
+  $items['user/register']['file path'] = drupal_get_path('module', 'outdoorfolks');
+  $items['user/register']['file'] = 'outdoorfolks_ctools_wizard.inc';*/
+
+  return $items;
+}
+
+function in_array_r($needle, $haystack, $strict = false) {
+  foreach ($haystack as $item) {
+    if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && in_array_r($needle, $item, $strict))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+?>

@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Provides install/uninstall callbacks for Multi-Step Registration module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function step_uninstall() {
+  db_delete('variable')
+    ->condition('name', db_like('step_') . '%', 'LIKE')
+    ->execute();
+
+  // Remove Profile2 settings.
+  if (STEP_PROFILE2) {
+    $types = db_select('profile_type', 'p')
+      ->fields('p', array('id', 'data'))
+      ->execute()
+      ->fetchAllKeyed();
+
+    foreach ($types as $id => $data) {
+      $data = unserialize($data);
+      if (isset($data['step_step'])) {
+        unset($data['step_step'], $data['step_exclude']);
+        $data = serialize($data);
+        db_update('profile_type')
+          ->fields(array('data' => $data))
+          ->condition('id', $id)
+          ->execute();
+      }
+    }
+  }
+}

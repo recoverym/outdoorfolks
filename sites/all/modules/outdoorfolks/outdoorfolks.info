@@ -1,0 +1,14 @@
+name = "Outdoorfolks Custom Code"
+description = "Custom Code for Outdoorfolks integration with Solr Search and Openlayers"
+core = 7.x
+package = Outdoorfolks Custom Modules
+
+; Core files
+files[] = outdoorfolks.module
+
+dependencies[] = openlayers_solr
+dependencies[] = openlayers
+dependencies[] = apachesolr_search
+dependencies[] = apachesolr
+dependencies[] = "geocoder_rules"
+dependencies[] = "email_registration"

@@ -1,0 +1,326 @@
+<?php
+/**
+ * @file
+ * An example field using the Field Types API.
+ */
+
+/**
+ * @defgroup field_example Example: Field Types API
+ * @ingroup examples
+ * @{
+ * Examples using Field Types API.
+ *
+ * This is updated from Barry Jaspan's presentation at Drupalcon Paris,
+ * @link http://acquia.com/community/resources/acquia-tv/intro-field-api-module-developers Video Presentation @endlink
+ *
+ * Providing a field requires:
+ * - Defining a field:
+ *   - hook_field_info()
+ *   - hook_field_schema()
+ *   - hook_field_validate()
+ *   - hook_field_is_empty()
+ *
+ * - Defining a formatter for the field (the portion that outputs the field for
+ *   display):
+ *   - hook_field_formatter_info()
+ *   - hook_field_formatter_view()
+ *
+ * - Defining a widget for the edit form:
+ *   - hook_field_widget_info()
+ *   - hook_field_widget_form()
+ *
+ * Our module defines the field in field_example_field_info(),
+ * field_example_field_validate() and field_example_field_is_empty().
+ * field_example_field_schema() is implemented in field_example.install.
+ *
+ * Our module sets up a formatter in field_example_field_formatter_info() and
+ * field_example_field_formatter_view(). These are the API hooks that present
+ * formatted and themed output to the user.
+
+ * And finally, our module defines the widet in
+ * field_example_field_widget_info() and field_example_field_widget_form().
+ * The widget is the form element used to receive input from the user
+ * when the field is being populated.
+ *
+ * @see field_types
+ * @see field
+ */
+
+/***************************************************************
+ * Field Type API hooks
+ ***************************************************************/
+
+/**
+ * Implements hook_field_info().
+ *
+ * Provides the description of the field.
+ */
+function activation_field_field_info() {
+  return array(
+      'activation_field' => array(
+          'label' => t('Activation Field'),
+          'description' => t("This field stores activation codes data"),
+          'settings' => array('allowed_values' => array(), 'allowed_values_function' => ''),
+          'default_widget' => 'activation_field_widget',
+          'default_formatter' => 'activation_field_formatter', // This doesn't *have* to be the same name as default_widget's value, this is only coincidence
+      ),
+  );
+}
+
+/**
+ * Implements hook_field_validate().
+ *
+ * This hook gives us a chance to validate content that's in our
+ * field. We're really only interested in the $items parameter, since
+ * it holds arrays representing content in the field we've defined.
+ * We want to verify that the items only contain RGB hex values like
+ * this: #RRGGBB. If the item validates, we do nothing. If it doesn't
+ * validate, we add our own error notification to the $errors parameter.
+ *
+ * @see field_example_field_widget_error()
+ */
+function activation_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  /*foreach ($items as $delta => $item) {
+    if (!empty($item['rgb'])) {
+      if (! preg_match('@^#[0-9a-f]{6}$@', $item['rgb'])) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'field_example_invalid',
+          'message' => t('Color must be in the HTML format #abcdef.'),
+        );
+      }
+    }
+  }*/
+}
+
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ * hook_field_is_emtpy() is where Drupal asks us if this field is empty.
+ * Return TRUE if it does not contain data, FALSE if it does. This lets
+ * the form API flag an error when required fields are empty.
+ */
+function activation_field_field_is_empty($item, $field) {
+  $temp = array_keys($field['columns']);
+  $key = array_shift($temp);
+  return empty($item[$key]);
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ *
+ * We need to tell Drupal that we have two different types of formatters
+ * for this field. One will change the code, and the other will
+ * change the activation status.
+ *
+ * @see activation_field_field_formatter_view()
+ */
+function activation_field_field_formatter_info() {
+  return array(
+    'activation_field_formatter' => array(
+      'label' => t('Default'),
+      'field types' => array('activation_field'),
+    ),
+     'activation_field_formatter_rw' => array(
+         'label' => t('Editable'),
+         'field types' => array('activation_field'),
+     ),
+      'activation_field_formatter_label_only' => array(
+          'label' => t('Label only'),
+          'field types' => array('activation_field'),
+      ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ *
+ * Two formatters are implemented.
+ * - activation_field_code
+ * - activation_field_activated
+ *
+ * @see activation_field_field_formatter_info()
+ */
+function activation_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+
+  $element = array();
+  foreach ($items as $delta => $item) {
+    $element[$delta] = activation_field_format_field($item,$display);
+  }
+  return $element;
+}
+
+function activation_field_format_field($item,$display) {
+
+  switch ($display['type']) {
+    case 'activation_field_formatter':
+      $element = array(
+        '#type' => 'container',
+        '#attributes' => array( 'class' => array( 'field-item') ),
+      );
+
+      $element['code'] = array(
+        'item' => array(
+            '#type' => 'container',
+            '#attributes' => array( 'class' => array( 'field-item') ),
+            'text' => array(
+                '#markup' => $item['code'],
+            ),
+        ),
+    );
+
+    if ($item['activated']) {
+      $element['activated'] = array(
+          'item' => array(
+              '#type' => 'container',
+              '#attributes' => array( 'class' => array( 'field-item') ),
+              'text' => array(
+                  '#markup' => t('Activated'),
+              ),
+          ),
+      );
+    }
+    else{
+      $element['activated'] = array(
+          'item' => array(
+              '#type' => 'container',
+              '#attributes' => array( 'class' => array( 'field-item') ),
+              'text' => array(
+                  '#markup' => t('Not Activated'),
+              ),
+          ),
+      );
+    }
+    break;
+
+    case 'activation_field_formatter_rw':
+      $element = array(
+      '#type' => 'container',
+      '#attributes' => array( 'class' => array( 'field-item') ),
+      );
+
+      $element['code'] = array(
+          'item' => array(
+              '#type' => 'container',
+              '#attributes' => array( 'class' => array( 'field-item') ),
+              'text' => array(
+                  '#markup' => $item['code'],
+              ),
+          ),
+      );
+
+      //if ($item['activated']) {
+        $element['activated'] = array(
+          'item' => array(
+              '#type' => 'checkbox',
+              '#title' => t('Activated'),
+              '#default_value' => $item['activated'],
+          ),
+        );
+     // }
+      break;
+
+      case 'activation_field_formatter_label_only':
+        $element = array(
+        '#type' => 'container',
+        '#attributes' => array( 'class' => array( 'field-item') ),
+        );
+
+        $element['code'] = array(
+            'item' => array(
+                '#type' => 'container',
+                '#attributes' => array( 'class' => array( 'field-item') ),
+                'text' => array(
+                    '#markup' => $item['code'],
+                ),
+            ),
+        );
+        break;
+  }
+  return $element;
+
+}
+
+/**
+ * Implements hook_field_widget_info().
+ *
+ * @see activation_field_field_widget_form()
+ */
+function activation_field_field_widget_info() {
+  return array(
+    'activation_field_widget' => array(
+      'label' => t('Default'),
+      'field types' => array('activation_field'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ *
+ * hook_widget_form() is where Drupal tells us to create form elements for
+ * our field's widget.
+ *
+ * We provide one of three different forms, depending on the widget type of
+ * the Form API item provided.
+ *
+ * The 'field_example_colorpicker' and 'field_example_text' are essentially
+ * the same, but field_example_colorpicker adds a javascript colorpicker
+ * helper.
+ *
+ * field_example_3text displays three text fields, one each for red, green,
+ * and blue. However, the field type defines a single text column,
+ * rgb, which needs an HTML color spec. Define an element validate
+ * handler that converts our r, g, and b fields into a simulated single
+ * 'rgb' form element.
+ */
+function activation_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+  $value = isset($items[$delta]['code']) ? $items[$delta]['code'] : '';
+
+  $element += array(
+      '#type' => 'fieldset',
+  );
+
+  $required = $element['#required'];
+  $item =& $items[$delta];
+
+  $element['code'] = array(
+      '#title' => t('Code'),
+      '#type' => 'textfield',
+      '#required' => $required,
+      // use #default_value to prepopulate the element
+      // with the current saved value
+      '#default_value' => $value,
+      );
+  $element['activated'] = array(
+      '#title' => t('Activated'),
+      '#type' => 'checkbox',
+      '#default_value' => isset($item['activated']) ? $item['activated'] : '',
+    );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_error().
+ *
+ * hook_field_widget_error() lets us figure out what to do with errors
+ * we might have generated in hook_field_validate(). Generally, we'll just
+ * call form_error().
+ *
+ * @see field_example_field_validate()
+ * @see form_error()
+ */
+function activation_field_field_widget_error($element, $error, $form, &$form_state) {
+ /* switch ($error['error']) {
+    case 'activation_field_invalid':
+      form_error($element, $error['message']);
+      break;
+  }*/
+}
+
+
+/**
+ * @} End of "defgroup activation_field".
+ */

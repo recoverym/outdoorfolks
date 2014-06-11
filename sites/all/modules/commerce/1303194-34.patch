@@ -1,0 +1,93 @@
+diff --git a/modules/product/commerce_product.module b/modules/product/commerce_product.module
+index 6708ea4..1c4d5f2 100644
+--- a/modules/product/commerce_product.module
++++ b/modules/product/commerce_product.module
+@@ -298,12 +298,65 @@ function commerce_product_permission() {
+     ),
+   );
+ 
+-  $permissions += commerce_entity_access_permissions('commerce_product');
++  $entity_type = 'commerce_product';
++
++  $permissions += commerce_entity_access_permissions($entity_type);
++
++  $entity_info = entity_get_info($entity_type);
++  $labels = $entity_info['permission labels'];
++
++  $permissions['view active ' . $entity_type . ' entity'] = array(
++    'title' => t('View active @entity_type of any type', array('@entity_type' => $labels['plural'])),
++  );
++
++  // Per-bundle view published permissions.
++  if (!empty($entity_info['entity keys']['bundle'])) {
++    foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
++      $permissions['view active ' . $entity_type . ' entity of bundle ' . $bundle_name] = array(
++        'title' => t('View active %bundle @entity_type', array('@entity_type' => $labels['plural'], '%bundle' => $bundle_info['label'])),
++      );
++    }
++  }
+ 
+   return $permissions;
+ }
+ 
+ /**
++ * Implements hook_commerce_entity_access_condition_commerce_product_alter().
++ */
++function commerce_product_commerce_entity_access_condition_commerce_product_alter(&$conditions, $context) {
++  $account = $context['account'];
++  $entity_type = $context['entity_type'];
++  $base_table = $context['base_table'];
++
++  // Get the entity type info array for the current access check.
++  $entity_info = entity_get_info($entity_type);
++
++  if (user_access('view active ' . $entity_type . ' entity', $account)) {
++    $conditions->condition($base_table . '.status', 1);
++  }
++  else {
++    $allowed_bundles = array();
++
++    foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
++      // If the user has access to view active commerce_product entities of the current bundle...
++      if (user_access('view active ' . $entity_type . ' entity of bundle ' . $bundle_name, $account)) {
++        // Add a condition granting access if the entity specified by the view
++        // query is of the same bundle.
++        $allowed_bundles[] = $bundle_name;
++      }
++    }
++
++    if ($allowed_bundles) {
++      $conditions->condition(db_and()
++        ->condition($base_table . '.status', 1)
++        ->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $allowed_bundles)
++      );
++    }
++  }
++}
++
++/**
+  * Implements hook_enable().
+  */
+ function commerce_product_enable() {
+@@ -603,7 +656,20 @@ function commerce_product_access($op, $product = NULL, $account = NULL) {
+  * Implements hook_query_TAG_alter().
+  */
+ function commerce_product_query_commerce_product_access_alter(QueryAlterableInterface $query) {
+-  return commerce_entity_access_query_alter($query, 'commerce_product');
++  // Pass the first 'commerce_product' table we can find in the query, as base.
++  $base_table = NULL;
++  try {
++    foreach ($query->getTables() as $table) {
++      if ($table['table'] == 'commerce_product') {
++        $base_table = $table['alias'];
++        break;
++      }
++    }
++  }
++  catch (exception $e) {
++    // This apparently wasn't a SelectQuery. Never mind; continue with default.
++  }
++  return commerce_entity_access_query_alter($query, 'commerce_product', $base_table);
+ }
+ 
+ /**

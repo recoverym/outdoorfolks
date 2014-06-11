@@ -1,0 +1,116 @@
+***************
+*** 409,454 ****
+  function location_taxonomize_term_attach($tids, $form, &$form_state) {
+    $lang = 'und';
+    
+    // check that the field exists and is set up correctly
+    $field = location_taxonomize_term_attach_check_field($form);
+    if ($field == FALSE) {
+-     drupal_set_message(t('Location Taxonomize could not attach the terms to the 
+- node because the Taxonomy Reference field is not set up correctly'), 'warning');
+      return;
+    }
+- 
+    // empty the currently set values
+-   $form_state['values'][$field][$lang] = array();
+-   
+    // Reverse the order to assign the lowest term in the hierarchy first
+    $tids = array_reverse($tids);
+    
+    // add the values
+    $tids = array_unique($tids);
+    foreach ($tids as $tid) {
+-     $form_state['values'][$field][$lang][]['tid'] = $tid;
+    }
+  }
+  
+- function location_taxonomize_term_attach_bulk($tids, $nid) {
+    $langcode = 'und';
+    // load the node
+-   $node = node_load($nid);
+-   if (!isset($node->field_location_taxonomize_terms)) return;
+    
+    // Reverse the order to assign the lowest term in the hierarchy first
+    $tids = array_reverse($tids);
+    
+    $tids = array_unique($tids);
+    $save = array();
+    foreach ($tids as $tid) {
+      $save[$langcode][]['tid'] = $tid;
+    }
+-   $node->field_location_taxonomize_terms = $save;
+-   node_save($node);
+  }
+  
+  ////////////////////////////////////////
+  // Feature: Bulk taxonomize
+  ////////////////////////////////////////
+  
+--- 411,477 ----
+  function location_taxonomize_term_attach($tids, $form, &$form_state) {
+    $lang = 'und';
+    
+    // check that the field exists and is set up correctly
+    $field = location_taxonomize_term_attach_check_field($form);
+    if ($field == FALSE) {
++     //drupal_set_message(t('Location Taxonomize could not attach the terms to th
++ e node because the Taxonomy Reference field is not set up correctly'), 'warning'
++ );
++ 	drupal_set_message(t('Location Taxonomize could not attach the terms to the ent
++ ity because the Taxonomy Reference field is not set up correctly'), 'warning');
+      return;
+    }
++   // check if we are a node or an entity;
++   $value_index = array_keys($form_state['values']);
++   
+    // empty the currently set values
++    if ($value_index[0] != 'nid')
++     {
++         $form_state['values'][$value_index[0]][$field][$lang] = array();
++     } else
++     {
++         $form_state['values'][$field][$lang] = array();
++     }
+    // Reverse the order to assign the lowest term in the hierarchy first
+    $tids = array_reverse($tids);
+    
+    // add the values
+    $tids = array_unique($tids);
+    foreach ($tids as $tid) {
++     if ($value_index[0] != 'nid')
++     {
++         $form_state['values'][$value_index[0]][$field][$lang][]['tid'] = $tid;
++     } else
++     {
++         $form_state['values'][$field][$lang][]['tid'] = $tid;
++     }
+    }
+  }
+  
++ //function location_taxonomize_term_attach_bulk($tids, $nid) {
++ function location_taxonomize_term_attach_bulk($tids, $eid) {
+    $langcode = 'und';
+    // load the node
++   /*$node = node_load($nid);
++   if (!isset($node->field_location_taxonomize_terms)) return;*/
++   $entity = entity_load($eid);
++   if (!isset($entity->field_location_taxonomize_terms)) return;
+    
+    // Reverse the order to assign the lowest term in the hierarchy first
+    $tids = array_reverse($tids);
+    
+    $tids = array_unique($tids);
+    $save = array();
+    foreach ($tids as $tid) {
+      $save[$langcode][]['tid'] = $tid;
+    }
++   /*$node->field_location_taxonomize_terms = $save;
++   node_save($node);*/
++   $entity->field_location_taxonomize_terms = $save;
++   entity_save($entity);
+  }
+  
+  ////////////////////////////////////////
+  // Feature: Bulk taxonomize
+  ////////////////////////////////////////
+  

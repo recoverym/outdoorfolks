@@ -1,0 +1,7 @@
+name = Outdoorfolks Registration Wizard
+description = Build multistep registration for Outdoorfolks user profiles
+core = 7.x
+dependencies[] = profile2
+dependencies[] = outdoorfolks
+dependencies[] = ctools
+
